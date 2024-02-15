@@ -1,0 +1,11 @@
+{% extends 'base.html' %} 
+
+{% block mail_title %}Private Room Verification Code{% endblock mail_title %}
+
+{% block recipient_name %}{{ name }}{% endblock recipient_name %}
+
+{% block mail_body %}
+
+    Kindly you will be using {{code}} to join {{room_name}} {{action}}.
+
+{% endblock mail_body %}

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django_asses
+  labels:
+    app: your-app-label
+spec:
+  replicas: 3 # Adjust the number of replicas as needed
+  selector:
+    matchLabels:
+      app: your-app-label
+  template:
+    metadata:
+      labels:
+        app: your-app-label
+    spec:
+      containers:
+      - name: your-container-name
+        image: your-docker-image:latest  # Replace with your Docker Hub image name
+        ports:
+        - containerPort: 8080  # Adjust the container port if needed

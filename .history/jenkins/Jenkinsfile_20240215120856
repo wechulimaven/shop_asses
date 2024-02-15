@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_CREDENTIALS_ID = '*************' // ID of Docker Hub credentials in Jenkins
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/wechulimaven/django_assesment.git'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image using docker-compose
+                    sh 'make build_image_staging'
+                }
+            }
+        }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Push Docker image to Docker Hub
+                    sh 'make push_image_staging'
+                }
+            }
+        }
+        
+        stage('Deploy with Ansible') {
+            steps {
+                // Run Ansible playbook to deploy the application
+                sh 'ansible-playbook -i inventory/hosts ansible/playbooks/deploy.yml'
+            }
+        }
+        
+        stage('Deploy with Kubernetes') {
+            steps {
+                // Apply Kubernetes manifests to deploy the application
+                sh 'kubectl apply -f kubernetes/deployment.yaml'
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}

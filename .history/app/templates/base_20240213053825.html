@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Prayer Hub</title>
+{% block styles %}
+{% endblock styles %}
+<style>
+    @import url('https://rsms.me/inter/inter.css');
+    html { font-family: 'Inter', sans-serif; }
+    @supports (font-variation-settings: normal) {
+        html { font-family: 'Inter var', sans-serif; }
+    }
+</style>
+</head>
+<body style="background-color: #F78DA7;">
+#f78da7
+<div style="position: relative;margin: 50px auto;max-width: 602px;background-color: #FFFFFF;">
+    <div style="padding: 20px 40px;">
+    	<h1 style="font-size: 24px;font-weight: bold;font-style: normal;line-height: 29px;">{% block mail_title %}{% endblock mail_title %}</h1>
+        {% block arbitrary_content %}{% endblock arbitrary_content %}
+        <p style="font-size: 24px;font-weight: normal;font-style: normal;line-height: 29px;">Hi, {% block recipient_name %}{% endblock recipient_name %}</p>
+        <p style="font-size: 16px;font-weight: normal;font-style: normal;line-height: 153.6%;color: #FF6900;">
+            {% block mail_body %}
+            {% endblock mail_body %}
+        </p>
+        
+        <div style="margin-top: 50px;text-align: center;">
+
+            <p style="font-size: 15px;font-weight: normal;font-style: normal;line-height: 22px;color: #ADB6CA;">
+                Yp<br />
+                TRM<br />
+                {% comment %} <br />
+                <br />
+                Manage email preferences or<br />
+				<a href="#" style="color: orange;">unsubscribe</a> {% endcomment %}
+            </p>
+        </div>
+    </div>
+    
+</div>
+
+</body>
+</html>

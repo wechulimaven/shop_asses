@@ -1,0 +1,19 @@
+{% extends 'base.html' %} 
+
+{% block mail_title %}Successful subscription {% endblock mail_title %}
+
+{% block recipient_name %}{{ name }}{% endblock recipient_name %}
+
+{% block mail_body %}
+   
+    <br />
+    You have unsubscribed from <h3>{{follower.first_name}} {{follower.last_name}}</h3>. You will nolonger be receiving email notification, if they have new content.
+    <br />
+    <br />
+    You can vist our webiste using the link below:
+    <br />
+    <div style="text-align: center;">
+        <b style="font-size: 20px;font-weight: bold;">{{ site_url }}</b>
+        <br />
+    </div>
+{% endblock mail_body %}

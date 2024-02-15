@@ -1,0 +1,33 @@
+
+run_server:
+	poetry run python manage.py runserver
+
+build_local:
+	docker-compose build
+
+run_local:
+	docker-compose up -d
+	docker-compose logs -f web
+
+run_command:
+	docker-compose exec web python manage.py create_super_user
+
+run_shell:
+	docker-compose exec web python manage.py shell
+
+run_migrations:
+	docker-compose exec web python manage.py makemigrations
+	docker-compose exec web python manage.py migrate
+
+merge_migrations:
+	docker-compose exec web python manage.py migrate --merge
+
+build_image_staging:
+	docker-compose -f docker-compose.yml -f docker-compose.stage.yml build
+
+run_staging:
+	docker-compose -f docker-compose.yml -f docker-compose.stage.yml up -d --build
+	docker-compose -f docker-compose.yml -f docker-compose.stage.yml logs -f web
+
+run_command_testing:
+	docker-compose -f docker-compose.yml -f docker-compose.stage.yml exec web python3 manage.py create_super_user

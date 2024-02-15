@@ -1,0 +1,31 @@
+---
+- name: Deploy Django project
+  hosts: all
+  become: yes
+  vars:
+    docker_hub_username: "wechulimaven"
+    docker_hub_password: "***********"
+    docker_hub_image: "wechulimaven/django_asses:latest"  # Docker Hub image name
+
+  tasks:
+    - name: Pull Docker image from Docker Hub
+      docker_image:
+        name: "{{ docker_hub_image }}"
+        source: pull
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+      become: yes
+
+    - name: Collect static files
+      command: "docker exec django_asses python manage.py collectstatic --noinput"
+      become: yes
+
+    - name: Apply database migrations
+      command: "docker exec django_asses python manage.py migrate --noinput"
+      become: yes
+
+    - name: Restart Django container
+      docker_container:
+        name: django_asses
+        state: restarted
+      become: yes

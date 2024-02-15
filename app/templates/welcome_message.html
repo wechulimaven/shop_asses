@@ -1,0 +1,10 @@
+{% extends 'base.html' %} 
+
+{% block mail_title %}Welcome Onboard{% endblock mail_title %}
+
+{% block recipient_name %}{{ name }}{% endblock recipient_name %}
+
+{% block mail_body %}
+    Thank you for signing up with us.
+
+{% endblock mail_body %}

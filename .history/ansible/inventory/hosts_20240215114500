@@ -1,0 +1,6 @@
+[jenkins_servers]
+jenkins-server.example.com
+
+
+[kubernetes_servers]
+kubernetes-server.example.com

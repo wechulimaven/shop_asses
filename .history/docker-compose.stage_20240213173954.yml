@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+  web:
+    build:
+      dockerfile: docker/Dockerfile
+    container_name: shop_stage_web
+    volumes:
+      - static_volume:/home/app/web/static
+    environment:
+      - DEBUG=True
+    ports:
+      - "8000:8000"
+    # logging:
+    #   driver: "awslogs"
+    #   options:
+    #     awslogs-region: "us-east-1"
+    #     awslogs-group: "Backend-Dev-Log"
+    #     awslogs-stream: "develop"
+
+  db:
+    image: postgres:15
+    container_name: shop_stage_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.db
+
+  redis:
+    container_name: shop_stage_redis
+
+  celery:
+    build:
+      dockerfile: docker/Dockerfile.celery
+    container_name: shop_stage_celery
+
+  celery-beat:
+    build:
+      dockerfile: docker/Dockerfile.celery
+    container_name: shop_stage_celery_beat
+  
+  proxy:
+    build:
+      context: ./proxy
+    restart: always
+    depends_on:
+      - django
+    ports:
+      - 8080:8000
+    volumes:
+      - static-data:/vol/web
+    environment:
+      - LISTEN_PORT=8000
+      - APP_HOST=django
+      - APP_PORT=8080
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

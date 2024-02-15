@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+
+{% block mail_title %}Account verification request{% endblock mail_title %}
+
+{% block recipient_name %}{{ name }}{% endblock recipient_name %}
+
+{% block mail_body %}
+    An account verification request was made for your newly created account: <b>{{ account_name }}</b>.<br />
+    <br />
+    <br />
+    Please click the link below to verify your account:
+    <br />
+    <div style="text-align: center;">
+        <a href="{{ verification_code|escape }}" style="font-size: 15px;">click here</a>
+        <br />
+    </div>
+{% endblock mail_body %}
