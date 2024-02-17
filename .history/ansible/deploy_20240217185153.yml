@@ -5,7 +5,7 @@
   vars:
     docker_hub_username: "wechulimaven"
     docker_hub_password: "************"
-    docker_hub_image: "wechulimaven/django_asses:latest"  # Replace with your Docker Hub image name
+    docker_hub_image: "wechulimaven/shop_asses:latest"  # Replace with your Docker Hub image name
 
   tasks:
     - name: Pull Docker image from Docker Hub

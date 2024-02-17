@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'GIT_CREDENTIALS_ID', url: 'https://github.com/wechulimaven/django_asses.git'
+                git credentialsId: 'GIT_CREDENTIALS_ID', url: 'https://github.com/wechulimaven/shop_asses.git'
             }
         }
         
@@ -24,10 +24,10 @@ pipeline {
             steps {
                 script {
                     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'DOCKER_CREDENTIALS_ID', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
-                        sh 'docker build -t django_asses .'
+                        sh 'docker build -t shop_asses .'
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                        sh 'docker tag django_asses $DOCKER_USERNAME/django_asses'
-                        sh 'docker push $DOCKER_USERNAME/django_asses'
+                        sh 'docker tag shop_asses $DOCKER_USERNAME/shop_asses'
+                        sh 'docker push $DOCKER_USERNAME/shop_asses'
                     }
                 }
             }

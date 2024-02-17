@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/wechulimaven/django_asses.git'
+                git 'https://github.com/wechulimaven/shop_asses.git'
             }
         }
         

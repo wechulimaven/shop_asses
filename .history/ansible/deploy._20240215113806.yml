@@ -5,7 +5,7 @@
   vars:
     docker_hub_username: "wechulimaven"
     docker_hub_password: "***********"
-    docker_hub_image: "wechulimaven/django_asses:latest"  # Docker Hub image name HERE
+    docker_hub_image: "wechulimaven/shop_asses:latest"  # Docker Hub image name HERE
 
   tasks:
     - name: Pull Docker image from Docker Hub
@@ -17,15 +17,15 @@
       become: yes
 
     - name: Collect static files
-      command: "docker exec django_asses python manage.py collectstatic --noinput"
+      command: "docker exec shop_asses python manage.py collectstatic --noinput"
       become: yes
 
     - name: Apply database migrations
-      command: "docker exec django_asses python manage.py migrate --noinput"
+      command: "docker exec shop_asses python manage.py migrate --noinput"
       become: yes
 
     - name: Restart Django container
       docker_container:
-        name: django_asses
+        name: shop_asses
         state: restarted
       become: yes
