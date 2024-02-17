@@ -1,7 +1,5 @@
 import logging
 
-from services.sms.sms_client import SMSClient
-
 from .utils import send_template_email
 from furl import furl
 from shop.celery import app as celery_app
@@ -19,7 +17,7 @@ def get_expiration_time():
 
 @celery_app.task(name="send_welcome_mail")
 def send_welcome_mail(user_id):
-    user = User.objects.get(id=user_id)
+    user = User.objects.get_user(user_id)
     logger.info("Sending welcome mail to: {}".format(user.email))
 
     send_template_email(
@@ -36,16 +34,13 @@ def send_welcome_mail(user_id):
 
 @celery_app.task(name="send_sms")
 def send_sms(user_id, message):
-    try:
-        user = User.objects.get(id=user_id)
-        logger.info("Sending message to: {}".format(user.phone))
+    user = User.objects.get_user(user_id)
+    logger.info("Sending welcome mail to: {}".format(user.phone))
 
-        sms = SMSClient(
-            recepient=user.phone,
-            message=message
-        )
-        sms.send()
+    sms = SMSClient(
+                    recepient=user.phone,
+                    message=f'Dear {user.name} new order item was added.'
+                )
+                sms.send()
 
-        logger.info("Sms sent message sent to: {}".format(user.phone))
-    except Exception:
-        raise
+    logger.info("Sms sent essage sent to: {}".format(user.ephonemail))

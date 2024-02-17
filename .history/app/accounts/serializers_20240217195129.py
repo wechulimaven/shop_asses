@@ -13,7 +13,6 @@ from django.utils import timezone
 from django.db import IntegrityError, transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.conf import settings
-from utilities.tasks import send_sms
 from services.sms.sms_client import SMSClient
 
 from utilities.utils import (
@@ -152,8 +151,12 @@ class OrderSerializer(serializers.ModelSerializer):
         try:
             order_obj= super().create(validated_data)
             user = order_obj.user
-            if order_obj.user.phone:                
-                send_sms.delay(user.phone, f'Dear {user.name} new order item was added.')
+            if order_obj.user.phone:
+                sms = SMSClient(
+                    recepient=user.phone,
+                    message=f'Dear {user.name} new order item was added.'
+                )
+                send_sms.send()
         except Exception :
             raise 
 

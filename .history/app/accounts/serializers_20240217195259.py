@@ -152,7 +152,8 @@ class OrderSerializer(serializers.ModelSerializer):
         try:
             order_obj= super().create(validated_data)
             user = order_obj.user
-            if order_obj.user.phone:                
+            if order_obj.user.phone:
+                
                 send_sms.delay(user.phone, f'Dear {user.name} new order item was added.')
         except Exception :
             raise 

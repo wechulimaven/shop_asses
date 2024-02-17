@@ -7,9 +7,8 @@ build_local:
 	docker-compose build
 
 run_local:
-	docker-compose up --build -d
+	docker-compose up -d
 	docker-compose logs -f web
-
 run_local_test:
 	docker-compose exec web python3 manage.py test
 

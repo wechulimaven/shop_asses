@@ -47,5 +47,3 @@ def send_sms(user_id, message):
         sms.send()
 
         logger.info("Sms sent message sent to: {}".format(user.phone))
-    except Exception:
-        raise

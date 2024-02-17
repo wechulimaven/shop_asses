@@ -36,16 +36,13 @@ def send_welcome_mail(user_id):
 
 @celery_app.task(name="send_sms")
 def send_sms(user_id, message):
-    try:
-        user = User.objects.get(id=user_id)
-        logger.info("Sending message to: {}".format(user.phone))
+    user = User.objects.get_user(user_id)
+    logger.info("Sending message to: {}".format(user.phone))
 
-        sms = SMSClient(
-            recepient=user.phone,
-            message=message
-        )
-        sms.send()
+    sms = SMSClient(
+        recepient=user.phone,
+        message=message
+    )
+    sms.send()
 
-        logger.info("Sms sent message sent to: {}".format(user.phone))
-    except Exception:
-        raise
+    logger.info("Sms sent message sent to: {}".format(user.phone))
