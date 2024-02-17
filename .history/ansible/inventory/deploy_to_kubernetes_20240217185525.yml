@@ -1,0 +1,14 @@
+---
+- name: Deploy Django Application to Kubernetes
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Apply Kubernetes Deployment
+      k8s:
+        state: present
+        definition: /kubernetes/deployment.yaml
+
+    - name: Apply Kubernetes Service
+      k8s:
+        state: present
+        definition: /kubernetes/service.yaml

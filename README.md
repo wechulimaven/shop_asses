@@ -1,0 +1,203 @@
+# CI/CD Pipeline with Jenkins, Docker, Ansible, Kubernetes, and Terraform
+
+This repository contains the configuration for setting up a CI/CD pipeline with Jenkins to automate the deployment of a Django application using Docker, Ansible, Kubernetes, and Terraform.
+
+## Overview
+
+The CI/CD pipeline automates the following tasks:
+
+1. Provisioning EC2 instances using Terraform.
+2. Pulling code from a GitHub repository.
+3. Building and testing the application.
+4. Building a Docker image and pushing it to Docker Hub.
+5. Deploying the application using Ansible.
+6. Deploying the application to Kubernetes.
+
+## Prerequisites
+
+Before setting up the CI/CD pipeline, ensure you have the following prerequisites installed and configured:
+
+- Terraform installed on your local machine.
+- Jenkins server with necessary plugins (Pipeline, SSH Agent, Docker, Kubernetes).
+- Docker installed on the Jenkins server.
+- Ansible installed on jenkins server.
+- Install kubectl
+- Kubernetes cluster set up and configured. (Using Eksctl commandline for Amazon EKS (Elastic Kubernetes Service))
+- Git repository containing the Django application code.
+
+
+## Directory Structure
+
+.
+├── Jenkins
+    ├── Jenkinsfile # Jenkins pipeline script
+
+├── app/ # Projects files and configuration
+    ├── accounts # Django app having the user and orders model with Rest api
+        ├── management
+            ├── commands
+                ├── create_super_user.py # Command file fpr creating super users
+                ├── wait_for_db.py # Command to check and ensure db is intialized
+        ├── models.py
+        ├── views.py
+        ├── urls.py
+        ├── serialiers.py
+        ├── tests.py
+    ├── services # Contains the SMS and SOCIAL AUTH SERVICES
+        ├── sms # Africans talking sms client configuration
+        ├── social_auth #Goolgle social auth configurations
+    ├── shop/ # Main projects folder configuration having settings file, celery file, storage backends, main urls file etc
+        ├── settings
+            ├── configs
+                ├── aws_config.py # Project aws configurations
+                ├── cache_vars.py # Project redis configurations
+                ├── celery_vars.py # Project celery configurations
+                ├── drf_spectacular.py # Api documentation configurations
+                ├── logging.py # Logging configurations
+                ├── rest_framework.py # Rest api configs
+            ├── base.py # Base settings file
+            ├── development.py # Local development settings file
+            ├── staging.py # Staging server settings file
+
+        ├── celery.py #Celery configuration
+        ├── storage_backends.py # Configuration django storage boto3
+        ├── urls.py # main url config file
+    ├── templates/ # Contains basic email template files for sending emails to clients
+    ├── utilities/ # Contains all shared/reusable functions and classes
+
+├── ansible/
+│ ├── playbooks/ # Ansible playbooks for Docker and Kubernetes deployment
+│ │ ├── deploy-docker-image.yml
+│ │ └── deploy-to-kubernetes.yml
+│ └── inventory/ # Ansible inventory file
+│ └── hosts # Ansible hosts inventory file
+
+├── scripts/ # Contains main entrypoint script responsible for 1. Ensuring db is initialized 2. Running migrations 3. Creating super user if not exist 4. Running the server
+
+├── docker/ # Dockerfiles and configuration
+|  ├── Dockerfile - Dockerfile for building deployment image
+|  ├── Dockerfile.local - Dockerfile for local development image
+|  ├── Dockerfile.celery - Dockerfile for building celery image
+
+├── terraform/
+│ └── main.tf # Terraform script for provisioning AWS services
+
+├── kubernetes/
+│ └── deployment.yaml # Kubernetes Deployment manifest file
+│ └── service.yaml # Kubernetes Deployment manifest file for kubernetes services
+└── Makefile # Makefile for Docker image build and push
+
+markdown
+
+
+## Usage
+
+1. **Provision EC2 Instances with Terraform**:
+   - Navigate to the `terraform/` directory:
+     ```
+     cd terraform/
+     ```
+   - Review and customize the Terraform configuration in `main.tf` and `variables.tf` files.
+   - Initialize Terraform:
+     ```
+     terraform init
+     ```
+   - Plan the Terraform changes:
+     ```
+     terraform plan
+     ```
+   - Apply the Terraform changes to provision EC2 instances:
+     ```
+     terraform apply
+     ```
+
+2. **Clone Repository**:
+
+git clone https://github.com/wechulimaven/django_asses.git
+cd your-repo
+
+less
+
+
+3. **Configure Jenkins SSH Server**:
+- Add the SSH server details in Jenkins under "Manage Jenkins" > "Configure System" > "Publish over SSH".
+
+3. **Set up Jenkins Pipeline**:
+- Create a new Jenkins pipeline job.
+- Configure the pipeline to use the provided Jenkinsfile.
+
+4. **Configure Docker Hub and Kubernetes Credentials**:
+- Store Docker Hub and Kubernetes credentials securely in Jenkins.
+
+5. **Run the Pipeline**:
+- Trigger the pipeline manually or configure webhooks in GitHub to trigger it automatically on code push events.
+
+## Jenkinsfile
+
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_CREDENTIALS_ID = '**********' // ID of Docker Hub credentials in Jenkins
+        GIT_CREDENTIALS_ID = '**********' // ID of Git credentials in Jenkins
+        KUBERNETES_CREDENTIALS_ID = '**********' // ID of Kubernetes credentials in Jenkins
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'GIT_CREDENTIALS_ID', url: 'https://github.com/wechulimaven/django_asses.git'
+            }
+        }
+        
+        stage('Build and Test') {
+            steps {
+                sh 'make run_tests' //Command to build and run tests
+            }
+        }
+        
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'DOCKER_CREDENTIALS_ID', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
+                        sh 'docker build -t django_asses .'
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                        sh 'docker tag django_asses $DOCKER_USERNAME/django_asses'
+                        sh 'docker push $DOCKER_USERNAME/django_asses'
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy with Ansible') {
+            steps {
+                script {
+                    sh 'ansible-playbook -i inventory/hosts ansible/playbooks/deploy.yml'
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'KUBERNETES_CREDENTIALS_ID', usernameVariable: 'KUBERNETES_USERNAME', passwordVariable: 'KUBERNETES_PASSWORD')]) {
+                        sh "kubectl config set-credentials user --username=${KUBERNETES_USERNAME} --password=${KUBERNETES_PASSWORD}"
+                        sh "kubectl apply -f kubernetes/"
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        failure {
+            echo 'Pipeline failed: Tests did not pass.'
+            currentBuild.result = 'FAILURE'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+    }
+}
+
